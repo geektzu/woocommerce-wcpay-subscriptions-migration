@@ -68,7 +68,7 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 						$subscription_edit = get_edit_post_link( $subscription_id );
 						$subscription_span = '<a target="_blank" href="' . $subscription_edit . '">' . __( "Subscription #$subscription_id - $status", 'wc-wcpay-subscriptions-migration' ) . '</a>';
 						$result            = $this->rollback_subscription( $subscription, $old_id, $new_id, $customer_id );
-						$message           = $result ? '<span class="wcpsm-success">' . __( 'Rollback success', 'wc-wcpay-subscriptions-migration' ) . '</span>' : '<span class="wcpsm-error">' . __( 'Rollback error', 'wc-wcpay-subscriptions-migration' ) . '</span>';
+						$message           = $result ? '<span class="wcpsm-success">' . __( 'Rollback success', 'wc-wcpay-subscriptions-migration' ) . '</span>' : '<span class="wcpsm-error">' . __( 'The old payment method provided does not belong to the customer.', 'wc-wcpay-subscriptions-migration' ) . '</span>';
 						$subscription_id   = $subscription->get_id();						
 						$html .= '<tr>
 							<td>' . $subscription_span . '</td>
@@ -113,7 +113,7 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 						$subscription_edit = get_edit_post_link( $subscription_id );
 						$subscription_span = '<a target="_blank" href="' . $subscription_edit . '">' . __( "Subscription #$subscription_id - $status", 'wc-wcpay-subscriptions-migration' ) . '</a>';
 						$result          = $this->migrate_subscription( $subscription, $old_id, $new_id, $customer_id );
-						$message         = $result ? '<span class="wcpsm-success">' . __( 'Migration success', 'wc-wcpay-subscriptions-migration' ) . '</span>' : '<span class="wcpsm-error">' . __( 'Migration error', 'wc-wcpay-subscriptions-migration' ) . '</span>';
+						$message         = $result ? '<span class="wcpsm-success">' . __( 'Migration success', 'wc-wcpay-subscriptions-migration' ) . '</span>' : '<span class="wcpsm-error">' . __( 'The new payment method provided does not belong to the customer.', 'wc-wcpay-subscriptions-migration' ) . '</span>';
 						$subscription_id = $subscription->get_id();						
 						$html .= '<tr>
 							<td>' . $subscription_span . '</td>
@@ -364,9 +364,9 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 			
 			$result = false;
 			try {
-				
+								
 				$wcpayments_id = 'woocommerce_payments';
-				$tokens    = WC_Payment_Tokens::get_customer_tokens( $subscription->get_customer_id(), $wcpayments_id );								
+				$tokens    = WC_Payment_Tokens::get_customer_tokens( $subscription->get_customer_id(), $wcpayments_id );
 				if ( $tokens ) {
 					$token     = array();
 					foreach ( $tokens as $tokn ) {
@@ -382,7 +382,7 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 						
 						$global = WC_Payments::is_network_saved_cards_enabled();
 						update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global );
-						update_post_meta( $subscription->get_id(), '_pl_old_payment_method_id', $old_token );								
+						update_post_meta( $subscription->get_id(), '_pl_old_payment_method_id', $old_token );	
 						$result = true;
 					}
 				}
@@ -411,8 +411,8 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 					        
 					        if ( $row ) {
 						        $customer_id  = isset( $data[0] ) ? $data[0] : '';
-						        $old_id       = isset( $data[1] ) ? $data[1] : '';
-						        $new_id       = isset( $data[2] ) ? $data[2] : '';
+						        $old_id       = isset( $data[1] ) ? trim( $data[1] ) : '';
+						        $new_id       = isset( $data[2] ) ? trim( $data[2] ) : '';
 						        if ( $customer_id && $old_id && $new_id ) {
 							        $this->data[] = array( 'customer_id' => $customer_id, 'old_id' => $old_id, 'new_id' => $new_id );
 						        }
