@@ -342,36 +342,62 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 		}
 		
 		public function rollback_subscription( $subscription, $old_id, $new_id, $customer_id ) {
+			// LOAD THE WC LOGGER
+		   	$logger = wc_get_logger();
+			$logger->info( "Rolling back migration", array( 'source' => 'wcpay-migrate' ) );
 			$result = false;
-						
+			$old_customer_id = get_post_meta($subscription->get_id(), '_pl_old_customer_id', true); //added by Alan
+			$global = WC_Payments::is_network_saved_cards_enabled();
+			update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $old_customer_id, $global ); //modified by Alan
+			// LOG THE FAILED ORDER TO CUSTOM LOG
+			$logger->info( wc_print_r( $old_customer_id, true ), array( 'source' => 'wcpay-migrate' ) );
+			
 			try {
-				$tokens = WC_Payment_Tokens::get_customer_tokens( $subscription->get_customer_id(), 'woocommerce_payments' );									foreach ( $tokens as $tokn ) {
+				$tokens = WC_Payment_Tokens::get_customer_tokens( $subscription->get_customer_id(), 'woocommerce_payments' );
+				
+				$logger->info( wc_print_r( $tokens, true ), array( 'source' => 'wcpay-migrate' ) );
+				foreach ( $tokens as $tokn ) {
 					if ( $tokn->get_token() == $old_id ) {							
 						$subscription->add_payment_token( $tokn );
 						$subscription->save();
 						$result = true;			
 						delete_post_meta( $subscription->get_id(), '_pl_old_payment_method_id' );
+						delete_post_meta( $subscription->get_id(), '_pl_old_customer_id' ); //added by Alan
 						break;	
 					}
 				}
 				
-			} catch ( Exception $e ) {}
+			} catch ( Exception $e ) {
+				return $e;
+			}
 			
+			$logger->info( "Done with rollback", array( 'source' => 'wcpay-migrate' ) );
 			return $result;
 		}
 			
 		public function migrate_subscription( $subscription, $old_token, $new_token, $customer_id ) {
+			// LOAD THE WC LOGGER
+		   	$logger = wc_get_logger();
+			$logger->info( "Executing migration", array( 'source' => 'wcpay-migrate' ) );
 			
 			$result = false;
-
-			$old_user_option = get_user_option($this->get_customer_id_option(),$subscription->get_customer_id()); 
-			update_post_meta( $subscription->get_id(), '_pl_old_customer_id', $old_user_option );
-			update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global );
-
+			$old_user_option = get_user_option($this->get_customer_id_option(),$subscription->get_customer_id()); //added by Alan
+			update_post_meta( $subscription->get_id(), '_pl_old_customer_id', $old_user_option ); //added by Alan
+			
+			$global = WC_Payments::is_network_saved_cards_enabled();
+			update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global ); //modified by Alan
+			
+			update_post_meta( $subscription->get_id(), '_stripe_customer_id', $customer_id ); //added by Alan
+			
 			try {
-								
+				
 				$wcpayments_id = 'woocommerce_payments';
 				$tokens    = WC_Payment_Tokens::get_customer_tokens( $subscription->get_customer_id(), $wcpayments_id );
+					
+		   		// LOG THE FAILED ORDER TO CUSTOM LOG
+		   		$logger->info( wc_print_r( $tokens, true ), array( 'source' => 'wcpay-migrate' ) );
+				$logger->info( wc_print_r( $subscription->get_customer_id(), true ), array( 'source' => 'wcpay-migrate' ) );
+					
 				if ( $tokens ) {
 					$token     = array();
 					foreach ( $tokens as $tokn ) {
@@ -381,19 +407,23 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 					}
 										
 					if ( $token ) {
-												
+																		
 						$subscription->add_payment_token( $token );
 						$subscription->save();								
 						
-						$global = WC_Payments::is_network_saved_cards_enabled();
+						$logger->info( wc_print_r( $old_user_option, true ), array( 'source' => 'wcpay-migrate' ) );
 						
-						update_post_meta( $subscription->get_id(), '_pl_old_payment_method_id', $old_token );	
+						update_post_meta( $subscription->get_id(), '_pl_old_payment_method_id', $old_token );
 						$result = true;
-					}
+					} 
 				}
-			} catch ( Exception $e ) {}
+			} catch ( Exception $e ) {
+				return $e;
+			}
 			
+			$logger->info( "Done with migration", array( 'source' => 'wcpay-migrate' ) );
 			return $result;
+			
 		}
 		
 		public function get_data_file() {
