@@ -363,6 +363,8 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 		public function migrate_subscription( $subscription, $old_token, $new_token, $customer_id ) {
 			
 			$result = false;
+			update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global );
+
 			try {
 								
 				$wcpayments_id = 'woocommerce_payments';
@@ -381,7 +383,7 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 						$subscription->save();								
 						
 						$global = WC_Payments::is_network_saved_cards_enabled();
-						update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global );
+						
 						update_post_meta( $subscription->get_id(), '_pl_old_payment_method_id', $old_token );	
 						$result = true;
 					}
