@@ -363,6 +363,9 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 		public function migrate_subscription( $subscription, $old_token, $new_token, $customer_id ) {
 			
 			$result = false;
+
+			$old_user_option = get_user_option($this->get_customer_id_option(),$subscription->get_customer_id()); 
+			update_post_meta( $subscription->get_id(), '_pl_old_customer_id', $old_user_option );
 			update_user_option( $subscription->get_customer_id(), $this->get_customer_id_option(), $customer_id, $global );
 
 			try {
