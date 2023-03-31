@@ -84,7 +84,7 @@ if ( class_exists( 'wc_wcpay_subscriptions_migration' ) ) {
 	define( 'WWCPSM_DIR_URL', plugin_dir_url( __FILE__ ) );
 	define( 'WWCPSM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 	define( 'WWCPSM_PLUGIN_FILE', __FILE__ );
-	define( 'WWCPSM_PLUGIN_VERSION', '1.0.1' );
+	define( 'WWCPSM_PLUGIN_VERSION', '1.0.2' );
 	
 	wc_wcpay_subscriptions_migration::get_instance();
 }
