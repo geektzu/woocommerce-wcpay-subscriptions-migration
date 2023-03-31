@@ -2,7 +2,7 @@
 /*
 Plugin Name: WooCommerce WCPay Subscriptions Migration
 Description: Migrates stripe subscriptions to WooCommerce Payments via CSV file.
-Version: 1.0.1
+Version: 1.0.2
 Author: Marcel Schmitz
 Text Domain: wc-wcpay-subscriptions-migration
 Domain Path: /languages
