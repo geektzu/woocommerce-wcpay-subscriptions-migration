@@ -359,6 +359,7 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 				foreach ( $tokens as $tokn ) {
 					if ( $tokn->get_token() == $old_id ) {							
 						$subscription->add_payment_token( $tokn );
+						$subscription->set_requires_manual_renewal( false ); //Added by Alan
 						$subscription->save();
 						$result = true;			
 						delete_post_meta( $subscription->get_id(), '_pl_old_payment_method_id' );
