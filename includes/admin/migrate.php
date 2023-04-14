@@ -408,8 +408,9 @@ if ( !class_exists( 'WWCPSM_Migrate' ) ) {
 					}
 										
 					if ( $token ) {
-																		
+											
 						$subscription->add_payment_token( $token );
+						$subscription->set_requires_manual_renewal( false ); //Added by Alan
 						$subscription->save();								
 						
 						$logger->info( wc_print_r( $old_user_option, true ), array( 'source' => 'wcpay-migrate' ) );
